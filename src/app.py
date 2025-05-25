@@ -1,9 +1,10 @@
 from fastapi import FastAPI
-from routers import images
+from routers import images, transform
 
 app = FastAPI()
 
 app.include_router(images.router, prefix="/api")
+app.include_router(transform.router,  prefix="/api")
 
 @app.get("/")
 async def root():
