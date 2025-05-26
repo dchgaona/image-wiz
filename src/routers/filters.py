@@ -26,16 +26,16 @@ async def grayscale(ImageId: str):
         modified_image = ImageOps.grayscale(original_image)
 
         output_buffer = BytesIO()
-        modified_image.save(output_buffer, format="JPEG")
+        modified_image.save(output_buffer, format="PNG")
         output_buffer.seek(0)
     except Exception as e:
         raise HTTPException(400, detail=f"Image processing failed: {str(e)}")
 
     return StreamingResponse(
         output_buffer,
-        media_type="image/jpeg",
+        media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=grayscaled.jpeg"
+            "Content-Disposition": f"inline; filename=grayscaled.png"
         }
     )    
 
@@ -56,16 +56,16 @@ async def negative(ImageId: str):
         modified_image = ImageOps.invert(original_image)
 
         output_buffer = BytesIO()
-        modified_image.save(output_buffer, format="JPEG")
+        modified_image.save(output_buffer, format="PNG")
         output_buffer.seek(0)
     except Exception as e:
         raise HTTPException(400, detail=f"Image processing failed: {str(e)}")
 
     return StreamingResponse(
         output_buffer,
-        media_type="image/jpeg",
+        media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=negative.jpeg"
+            "Content-Disposition": f"inline; filename=negative.png"
         }
     )    
 
@@ -89,16 +89,16 @@ async def posterize(ImageId: str, bits: int):
         modified_image = ImageOps.posterize(original_image, bits)
 
         output_buffer = BytesIO()
-        modified_image.save(output_buffer, format="JPEG")
+        modified_image.save(output_buffer, format="PNG")
         output_buffer.seek(0)
     except Exception as e:
         raise HTTPException(400, detail=f"Image processing failed: {str(e)}")
 
     return StreamingResponse(
         output_buffer,
-        media_type="image/jpeg",
+        media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=posterized.jpeg"
+            "Content-Disposition": f"inline; filename=posterized.png"
         }
     )    
 
@@ -130,7 +130,7 @@ async def sepia(ImageId: str):
         image_result = Image.fromarray(image_result)
 
         output_buffer = BytesIO()
-        image_result.save(output_buffer, format="JPEG")
+        image_result.save(output_buffer, format="PNG")
         output_buffer.seek(0)
 
     except Exception as e:
@@ -138,9 +138,9 @@ async def sepia(ImageId: str):
 
     return StreamingResponse(
         output_buffer,
-        media_type="image/jpeg",
+        media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=sepia.jpeg"
+            "Content-Disposition": f"inline; filename=sepia.png"
         }
     )    
 
@@ -161,7 +161,7 @@ async def sharpen(ImageId: str):
         modified_image = original_image.filter(ImageFilter.SHARPEN)
 
         output_buffer = BytesIO()
-        modified_image.save(output_buffer, format="JPEG")
+        modified_image.save(output_buffer, format="PNG")
         output_buffer.seek(0)
 
     except Exception as e:
@@ -169,8 +169,8 @@ async def sharpen(ImageId: str):
 
     return StreamingResponse(
         output_buffer,
-        media_type="image/jpeg",
+        media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=sharpened.jpeg"
+            "Content-Disposition": f"inline; filename=sharpened.png"
         }
     )    
