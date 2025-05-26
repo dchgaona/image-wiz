@@ -13,6 +13,12 @@ router = APIRouter()
 # Grayscale filter
 @router.get("/filter/grayscale/{ImageId}")
 async def grayscale(ImageId: str):
+    
+    """
+    Convert an image to grayscale.
+    - **ImageId**: The ID of the image to be converted.
+    """
+
     contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
 
     if not contents:
@@ -43,6 +49,12 @@ async def grayscale(ImageId: str):
 # Negative filter
 @router.get("/filter/negative/{ImageId}")
 async def negative(ImageId: str):
+
+    """
+    Convert an image to its negative.
+    - **ImageId**: The ID of the image to be converted.
+    """
+
     contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
 
     if not contents:
@@ -73,6 +85,13 @@ async def negative(ImageId: str):
 # Posterize filter
 @router.get("/filter/posterize/{ImageId}")
 async def posterize(ImageId: str, bits: int):
+    
+    """
+    Posterize an image to a specified number of bits.
+    - **ImageId**: The ID of the image to be posterized.
+    - **bits**: The number of bits to posterize the image (1-8).
+    """
+
     if bits > 8 or bits < 1:
         raise HTTPException(500, detail="Posterize bits can't be greater than 8 or less than 1")
 
@@ -106,6 +125,12 @@ async def posterize(ImageId: str, bits: int):
 # Sepia filter
 @router.get("/filter/sepia/{ImageId}")
 async def sepia(ImageId: str):
+
+    """
+    Apply a sepia filter to an image.
+    - **ImageId**: The ID of the image to be processed.
+    """
+
     contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
 
     if not contents:
@@ -148,6 +173,12 @@ async def sepia(ImageId: str):
 # Sharpen image
 @router.get("/filter/sharpen/{ImageId}")
 async def sharpen(ImageId: str):
+    
+    """
+    Apply a sharpen filter to an image.
+    - **ImageId**: The ID of the image to be processed.
+    """
+
     contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
 
     if not contents:

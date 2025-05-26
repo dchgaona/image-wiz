@@ -30,6 +30,7 @@ async def get_image(ImageId: str):
 
 @router.post("/images/")
 async def post_image(image: UploadFile = File(...)):
+    
     contents = await image.read()
 
     result = await db["images"].insert_one(
