@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from mongo.database_handler import db
 from bson.objectid import ObjectId
 from bson.binary import Binary
 from PIL import Image
+from auth.dependencies import get_current_user
+from models import UserInDB
 from io import BytesIO
 
 
@@ -11,13 +13,15 @@ router = APIRouter()
 
 # Mirror (Left-Right)
 @router.get("/transform/mirror/{ImageId}")
-async def mirror_image(ImageId: str):
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+async def mirror_image(ImageId: str, current_user: UserInDB = Depends(get_current_user)):
 
-    if not contents:
+    users = await db["users"].find_one({"_id": current_user._id})
+
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -33,21 +37,23 @@ async def mirror_image(ImageId: str):
 
     return StreamingResponse(
         output_buffer,
-        media_type="image/png",
+        media_type=f"image/png",
         headers={
-            "Content-Disposition": f"inline; filename=mirror.png"
+            "Content-Disposition": f"inline; filename=mirror_{ImageId}.png"
         }
     )    
 
 # Flip (Up-Down)
 @router.get("/transform/flip/{ImageId}")
-async def flip_image(ImageId: str):
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+async def flip_image(ImageId: str, current_user: UserInDB = Depends(get_current_user)):
 
-    if not contents:
+    user = await db["users"].find_one({"_id": current_user._id})
+
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -65,20 +71,22 @@ async def flip_image(ImageId: str):
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=flipped.png"
+            "Content-Disposition": f"inline; filename=flipped_{ImageId}.png"
         }
     )    
 
 
 # Rotate image
 @router.get("/transform/rotate/{ImageId}")
-async def rotate_image(ImageId: str, degrees: int):
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+async def rotate_image(ImageId: str, degrees: int, current_user: UserInDB = Depends(get_current_user)):
+    
+    user = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -96,20 +104,22 @@ async def rotate_image(ImageId: str, degrees: int):
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=rotated_{degrees}.png"
+            "Content-Disposition": f"inline; filename=rotated_{degrees}_{ImageId}.png"
         }
     )    
 
 
 # Resize image
 @router.get("/transform/resize/{ImageId}")
-async def resize_image(ImageId: str, width: int, height: int):
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+async def resize_image(ImageId: str, width: int, height: int, current_user: UserInDB = Depends(get_current_user)):
+    
+    user = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -127,20 +137,22 @@ async def resize_image(ImageId: str, width: int, height: int):
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=resized_{width}x{height}.png"
+            "Content-Disposition": f"inline; filename=resized_{width}x{height}_{ImageId}.png"
         }
     )    
 
 
 # Crop image
 @router.get("/transform/crop/{ImageId}")
-async def crop_image(ImageId: str, left: int, top: int, right: int, bottom: int):
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+async def crop_image(ImageId: str, left: int, top: int, right: int, bottom: int, current_user: UserInDB = Depends(get_current_user)):
+    
+    user = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -160,6 +172,6 @@ async def crop_image(ImageId: str, left: int, top: int, right: int, bottom: int)
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=cropped_{left}x{top}x{right}x{bottom}.png"
+            "Content-Disposition": f"inline; filename=cropped_{left}x{top}x{right}x{bottom}_{ImageId}.png"
         }
     )    
