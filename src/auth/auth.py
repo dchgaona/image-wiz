@@ -6,7 +6,10 @@ import uuid
 
 async def get_user(username: str) -> UserInDB | None:
     """Retrieve a user by username."""
-    user = await db["users"].find_one({"username": username})
+    user_dict = await db["users"].find_one({"username": username})
+    if user_dict:
+        return UserInDB(**user_dict)
+    return None
 
 async def register_user(username: str, password: str):
     """Register a new user."""
@@ -14,16 +17,21 @@ async def register_user(username: str, password: str):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
-    hashed = hash_password(password)
-    user = UserInDB(
-        _id=str(uuid.uuid4()),
-        username=username,
-        hashed_password=hashed
-    )
-    db["users"].insert_one({"_id": user._id, "username": user.username, "hashed_password": user.hashed_password})
+    hashed = await hash_password(password)
+
+    user_data = {
+        "_id": str(uuid.uuid4()),
+        "username": username,
+        "hashed_password": hashed
+    }
+    
+    user = UserInDB(**user_data)
+    
+    result = await db["users"].insert_one(user_data)
+    return user
 
 async def authenticate_user(username: str, password: str) -> UserInDB | None:
-    user = get_user(username)
-    if not user or not verify_password(password, user.hashed_password):
+    user = await get_user(username)
+    if not user or not await verify_password(password, user.hashed_password):
         return None
     return user

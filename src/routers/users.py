@@ -7,8 +7,8 @@ router = APIRouter()
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_user(register_req: RegisterReq):
-    auth.register_user(register_req.username, register_req.password)
-    return {"message": "User registered successfully"}
+    new_user = await auth.register_user(register_req.username, register_req.password)
+    return {"message": "User registered successfully", "New_User": new_user}
 
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -19,5 +19,5 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = jwt.create_access_token(data={"sub": user.username})
+    access_token = await jwt.create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}

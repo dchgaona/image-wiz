@@ -20,7 +20,7 @@ async def mirror_image(ImageId: str, current_user: UserInDB = Depends(get_curren
     - **ImageId**: The ID of the image to be mirrored.
     """
 
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -57,7 +57,7 @@ async def flip_image(ImageId: str, current_user: UserInDB = Depends(get_current_
     - **ImageId**: The ID of the image to be flipped.
     """
 
-    user = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -96,7 +96,7 @@ async def rotate_image(ImageId: str, degrees: int, current_user: UserInDB = Depe
     - **degrees**: The number of degrees to rotate the image.
     """
 
-    user = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -136,7 +136,7 @@ async def resize_image(ImageId: str, width: int, height: int, current_user: User
     - **height**: The new height of the image.
     """
 
-    user = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -178,7 +178,7 @@ async def crop_image(ImageId: str, left: int, top: int, right: int, bottom: int,
     - **bottom**: The bottom coordinate of the crop rectangle.
     """
     
-    user = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")

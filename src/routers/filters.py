@@ -1,10 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from mongo.database_handler import db
 from bson.objectid import ObjectId
 from bson.binary import Binary
 from PIL import Image, ImageOps, ImageFilter
 from io import BytesIO
+from models import UserInDB
+from auth.dependencies import get_current_user
 import numpy as np
 
 
@@ -19,7 +21,7 @@ async def grayscale(ImageId: str, current_user: UserInDB = Depends(get_current_u
     - **ImageId**: The ID of the image to be converted.
     """
 
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -56,7 +58,7 @@ async def negative(ImageId: str, current_user: UserInDB = Depends(get_current_us
     - **ImageId**: The ID of the image to be converted.
     """
 
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -97,7 +99,7 @@ async def posterize(ImageId: str, bits: int, current_user: UserInDB = Depends(ge
     if bits > 8 or bits < 1:
         raise HTTPException(500, detail="Posterize bits can't be greater than 8 or less than 1")
 
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -134,7 +136,7 @@ async def sepia(ImageId: str, current_user: UserInDB = Depends(get_current_user)
     - **ImageId**: The ID of the image to be processed.
     """
 
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -183,7 +185,7 @@ async def sharpen(ImageId: str, current_user: UserInDB = Depends(get_current_use
     - **ImageId**: The ID of the image to be processed.
     """
 
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")

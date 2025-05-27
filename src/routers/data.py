@@ -32,7 +32,7 @@ async def change_format(ImageId: str, new_format: str, current_user: UserInDB = 
     - **Valid formats**: jpeg, jpg, png, bmp, gif, tif, tiff, webp.
     """
     
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -73,7 +73,7 @@ async def compress_image(ImageId: str, quality_level: int, current_user: UserInD
     - **quality_level**: The quality level for compression (1-100).
     """
 
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -121,7 +121,7 @@ async def add_watermark(ImageId: str, watermark: UploadFile = File(None), text: 
     """
 
     
-    users = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")

@@ -27,7 +27,7 @@ async def upload_image(
         
         
         result = await db["users"].update_one(
-            {"_id": current_user._id},
+            {"_id": current_user.id},
             {
                 "$set": {
                     f"images.{image_data['id']}": image_data
@@ -48,7 +48,7 @@ async def get_image(
     image_id: str,
     current_user: UserInDB = Depends(get_current_user)
 ):
-    user = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
     
     if not user or "images" not in user or image_id not in user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -61,7 +61,7 @@ async def get_image(
 
 @router.get("/images")
 async def get_all_images(current_user: UserInDB = Depends(get_current_user)):
-    user = await db["users"].find_one({"_id": current_user._id})
+    user = await db["users"].find_one({"_id": current_user.id})
     
     if not user or "images" not in user:
         return {"images": {}}
@@ -84,7 +84,7 @@ async def delete_image(
     current_user: UserInDB = Depends(get_current_user)
 ):
     result = await db["users"].update_one(
-        {"_id": current_user._id},
+        {"_id": current_user.id},
         {"$unset": {f"images.{image_id}": ""}}
     )
     
@@ -96,7 +96,7 @@ async def delete_image(
 @router.delete("/images")
 async def delete_all_images(current_user: UserInDB = Depends(get_current_user)):
     result = await db["users"].update_one(
-        {"_id": current_user._id},
+        {"_id": current_user.id},
         {"$set": {"images": {}}}
     )
     
