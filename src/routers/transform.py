@@ -14,6 +14,11 @@ router = APIRouter()
 # Mirror (Left-Right)
 @router.get("/transform/mirror/{ImageId}")
 async def mirror_image(ImageId: str, current_user: UserInDB = Depends(get_current_user)):
+    
+    """
+    Mirror an image horizontally.
+    - **ImageId**: The ID of the image to be mirrored.
+    """
 
     users = await db["users"].find_one({"_id": current_user._id})
 
@@ -46,6 +51,11 @@ async def mirror_image(ImageId: str, current_user: UserInDB = Depends(get_curren
 # Flip (Up-Down)
 @router.get("/transform/flip/{ImageId}")
 async def flip_image(ImageId: str, current_user: UserInDB = Depends(get_current_user)):
+
+    """
+    Flip an image vertically.
+    - **ImageId**: The ID of the image to be flipped.
+    """
 
     user = await db["users"].find_one({"_id": current_user._id})
 
@@ -80,6 +90,12 @@ async def flip_image(ImageId: str, current_user: UserInDB = Depends(get_current_
 @router.get("/transform/rotate/{ImageId}")
 async def rotate_image(ImageId: str, degrees: int, current_user: UserInDB = Depends(get_current_user)):
     
+    """
+    Rotate an image by a specified number of degrees.
+    - **ImageId**: The ID of the image to be rotated.
+    - **degrees**: The number of degrees to rotate the image.
+    """
+
     user = await db["users"].find_one({"_id": current_user._id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
@@ -113,6 +129,13 @@ async def rotate_image(ImageId: str, degrees: int, current_user: UserInDB = Depe
 @router.get("/transform/resize/{ImageId}")
 async def resize_image(ImageId: str, width: int, height: int, current_user: UserInDB = Depends(get_current_user)):
     
+    """
+    Resize an image to specified dimensions.
+    - **ImageId**: The ID of the image to be resized.
+    - **width**: The new width of the image.
+    - **height**: The new height of the image.
+    """
+
     user = await db["users"].find_one({"_id": current_user._id})
 
     if not user or "images" not in user or ImageId not in  user["images"]:
@@ -145,6 +168,15 @@ async def resize_image(ImageId: str, width: int, height: int, current_user: User
 # Crop image
 @router.get("/transform/crop/{ImageId}")
 async def crop_image(ImageId: str, left: int, top: int, right: int, bottom: int, current_user: UserInDB = Depends(get_current_user)):
+    
+    """
+    Crop an image to specified dimensions.
+    - **ImageId**: The ID of the image to be cropped.
+    - **left**: The left coordinate of the crop rectangle.
+    - **top**: The top coordinate of the crop rectangle.
+    - **right**: The right coordinate of the crop rectangle.
+    - **bottom**: The bottom coordinate of the crop rectangle.
+    """
     
     user = await db["users"].find_one({"_id": current_user._id})
 

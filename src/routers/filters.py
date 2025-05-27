@@ -12,19 +12,20 @@ router = APIRouter()
 
 # Grayscale filter
 @router.get("/filter/grayscale/{ImageId}")
-async def grayscale(ImageId: str):
+async def grayscale(ImageId: str, current_user: UserInDB = Depends(get_current_user)):
     
     """
     Convert an image to grayscale.
     - **ImageId**: The ID of the image to be converted.
     """
 
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+    users = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -41,26 +42,27 @@ async def grayscale(ImageId: str):
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=grayscaled.png"
+            "Content-Disposition": f"inline; filename=grayscaled_{ImageId}.png"
         }
     )    
 
 
 # Negative filter
 @router.get("/filter/negative/{ImageId}")
-async def negative(ImageId: str):
+async def negative(ImageId: str, current_user: UserInDB = Depends(get_current_user)):
 
     """
     Convert an image to its negative.
     - **ImageId**: The ID of the image to be converted.
     """
 
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+    users = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -77,14 +79,14 @@ async def negative(ImageId: str):
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=negative.png"
+            "Content-Disposition": f"inline; filename=negative_{ImageId}.png"
         }
     )    
 
 
 # Posterize filter
 @router.get("/filter/posterize/{ImageId}")
-async def posterize(ImageId: str, bits: int):
+async def posterize(ImageId: str, bits: int, current_user: UserInDB = Depends(get_current_user)):
     
     """
     Posterize an image to a specified number of bits.
@@ -95,12 +97,13 @@ async def posterize(ImageId: str, bits: int):
     if bits > 8 or bits < 1:
         raise HTTPException(500, detail="Posterize bits can't be greater than 8 or less than 1")
 
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+    users = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -117,26 +120,27 @@ async def posterize(ImageId: str, bits: int):
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=posterized.png"
+            "Content-Disposition": f"inline; filename=posterized_{ImageId}.png"
         }
     )    
 
 
 # Sepia filter
 @router.get("/filter/sepia/{ImageId}")
-async def sepia(ImageId: str):
+async def sepia(ImageId: str, current_user: UserInDB = Depends(get_current_user)):
 
     """
     Apply a sepia filter to an image.
     - **ImageId**: The ID of the image to be processed.
     """
 
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+    users = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         image = Image.open(image_bytes).convert("RGB")
@@ -165,26 +169,27 @@ async def sepia(ImageId: str):
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=sepia.png"
+            "Content-Disposition": f"inline; filename=sepia_{ImageId}.png"
         }
     )    
 
 
 # Sharpen image
 @router.get("/filter/sharpen/{ImageId}")
-async def sharpen(ImageId: str):
+async def sharpen(ImageId: str, current_user: UserInDB = Depends(get_current_user)):
     
     """
     Apply a sharpen filter to an image.
     - **ImageId**: The ID of the image to be processed.
     """
 
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+    users = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -202,6 +207,6 @@ async def sharpen(ImageId: str):
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=sharpened.png"
+            "Content-Disposition": f"inline; filename=sharpened_{ImageId}.png"
         }
     )    

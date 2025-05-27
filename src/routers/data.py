@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from fastapi.responses import StreamingResponse
 from PIL import Image, ImageDraw, ImageFont
 from mongo.database_handler import db
 from bson.objectid import ObjectId
+from auth.dependencies import get_current_user
+from models import UserInDB
 from bson.binary import Binary
 from io import BytesIO
 
@@ -21,7 +23,7 @@ formats = {
 
 # Change image format
 @router.get("/data/format/{ImageId}")
-async def change_format(ImageId: str, new_format: str):
+async def change_format(ImageId: str, new_format: str, current_user: UserInDB = Depends(get_current_user)):
 
     """
     Change the format of an image to a specified format.
@@ -29,17 +31,18 @@ async def change_format(ImageId: str, new_format: str):
     - **new_format**: The desired format for the image (e.g., jpeg, png, webp).
     - **Valid formats**: jpeg, jpg, png, bmp, gif, tif, tiff, webp.
     """
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+    
+    users = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
-
     
     if new_format.casefold() not in formats:
         raise HTTPException(status_code=400, detail=f"Not valid format. List of valid formats: {formats.keys()}")
     
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -62,7 +65,7 @@ async def change_format(ImageId: str, new_format: str):
 
 # Compress image
 @router.get("/data/compress/{ImageId}")
-async def compress_image(ImageId: str, quality_level: int):
+async def compress_image(ImageId: str, quality_level: int, current_user: UserInDB = Depends(get_current_user)):
     
     """
     Compress an image to a specified quality level.
@@ -70,16 +73,18 @@ async def compress_image(ImageId: str, quality_level: int):
     - **quality_level**: The quality level for compression (1-100).
     """
 
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+    users = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
+
 
     if quality_level > 100 or quality_level < 1:
         raise HTTPException(status_code=400, detail="quality_level can't be greater than 100 or lower than 1")
     
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -99,14 +104,14 @@ async def compress_image(ImageId: str, quality_level: int):
         output_buffer,
         media_type=f"image/webp",
         headers={
-            "Content-Disposition": f"inline; filename=compressed.webp"
+            "Content-Disposition": f"inline; filename=compressed_{ImageId}.webp"
         }
     )    
 
 
 # Add watermark to image
 @router.post("/data/watermark/{ImageId}")
-async def add_watermark(ImageId: str, watermark: UploadFile = File(None), text: str = None, position: str = "BOTTOM_RIGHT"):    
+async def add_watermark(ImageId: str, watermark: UploadFile = File(None), text: str = None, position: str = "BOTTOM_RIGHT", current_user: UserInDB = Depends(get_current_user)):    
     """
     Add a watermark to an image by either uploading a watermark image or providing text.
     - **ImageId**: The ID of the image to which the watermark will be added.
@@ -115,15 +120,18 @@ async def add_watermark(ImageId: str, watermark: UploadFile = File(None), text: 
     - **position**: The position of the watermark on the image. Default is "BOTTOM_RIGHT".
     """
 
-    contents = await db["images"].find_one({"_id": ObjectId(ImageId)})
+    
+    users = await db["users"].find_one({"_id": current_user._id})
 
-    if not contents:
+    if not user or "images" not in user or ImageId not in  user["images"]:
         raise HTTPException(status_code=404, detail="Image not found")
+
 
     if not watermark and not text:
         raise HTTPException(status_code=400, detail="You must provide either a watermark image or text")
 
-    image_bytes = BytesIO(contents["data"])
+    image_data = user["images"][ImageId]
+    image_bytes = BytesIO(image_data["content"])
 
     try:
         original_image = Image.open(image_bytes)
@@ -189,7 +197,7 @@ async def add_watermark(ImageId: str, watermark: UploadFile = File(None), text: 
         output_buffer,
         media_type="image/png",
         headers={
-            "Content-Disposition": f"inline; filename=watermarked.png"
+            "Content-Disposition": f"inline; filename=watermarked_{ImageId}.png"
         }
     )
     
