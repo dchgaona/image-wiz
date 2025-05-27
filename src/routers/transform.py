@@ -68,7 +68,7 @@ async def flip_image(ImageId: str, current_user: UserInDB = Depends(get_current_
     try:
         original_image = Image.open(image_bytes)
 
-        modified_image = original_image.transpose(method=Image.Transpose.TOP_BOTTOM)
+        modified_image = original_image.transpose(method=Image.Transpose.FLIP_TOP_BOTTOM)
 
         output_buffer = BytesIO()
         modified_image.save(output_buffer, format="PNG")
