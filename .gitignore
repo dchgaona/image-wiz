@@ -1,6 +1,5 @@
 /.venv
 src/.env
-src/__pycache__/
-src/routers/__pycache__/
+__pycache__/
 
 
